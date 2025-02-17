@@ -1,4 +1,4 @@
-use std::{arch::aarch64::int32x2x2_t, array};
+//use std::{arch::aarch64::int32x2x2_t, array};
 
 use ndarray::{Array2};
 use std::env;
@@ -6,7 +6,7 @@ use walkdir::WalkDir;
 use image::{GrayImage};
 
 mod dataset;
-use dataset::XRF_Dataset;
+use dataset::XrfDataset;
 
 mod database;
 
@@ -46,7 +46,7 @@ fn saerch_hdf5(config:Config) -> Result<(), hdf5::Error>
         //if f_name.ends_with(".h50") && sec.elapsed()?.as_secs() < 86400 
         if f_name.ends_with(".h50")
         {
-            let dataset = XRF_Dataset::new();
+            let mut dataset = XrfDataset::new();
             dataset.load_from_hdf5(entry.path().to_str().unwrap()).unwrap();
         }
         /*
@@ -86,6 +86,7 @@ fn main()
                 config.export_counts_png = true;
             }
         }
+        database::db_print_users().unwrap();
         let _ = saerch_hdf5(config);
     }
     else 
