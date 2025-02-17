@@ -1,46 +1,30 @@
 use postgres::{Client, NoTls, Error};
-use std::collections::HashMap;
+//use std::collections::HashMap;
+use std::env;
 
 //mod dataset;
 //use dataset::XRF_Dataset;
 
-struct Author 
+struct DbUser 
 {
-    _id: i32,
-    name: String,
-    country: String
+    badge: i32,
+    username: String,
+    level: String
 }
 
-pub fn call() -> Result<(), Error> 
+pub fn db_print_users() -> Result<(), Error> 
 {
-    let mut client = Client::connect("postgresql://postgres:postgres@localhost/library", 
-                                    NoTls)?;
+    let psql_conn_str = env::var("SVC_PSQL_CONN_STR").unwrap();
+    let mut client = Client::connect(&psql_conn_str, NoTls)?;
     
-    let mut authors = HashMap::new();
-    authors.insert(String::from("Chinua Achebe"), "Nigeria");
-    authors.insert(String::from("Rabindranath Tagore"), "India");
-    authors.insert(String::from("Anita Nair"), "India");
-
-    for (key, value) in &authors {
-        let author = Author {
-            _id: 0,
-            name: key.to_string(),
-            country: value.to_string()
+    for row in client.query("SELECT u.badge,u.username,ut.level FROM users u INNER JOIN usertypes ut ON u.user_type = ut.id;", &[])? 
+    {
+        let user = DbUser {
+            badge: row.get(0),
+            username: row.get(1),
+            level: row.get(2),
         };
-
-        client.execute(
-                "INSERT INTO author (name, country) VALUES ($1, $2)",
-                &[&author.name, &author.country],
-        )?;
-    }
-
-    for row in client.query("SELECT id, name, country FROM author", &[])? {
-        let author = Author {
-            _id: row.get(0),
-            name: row.get(1),
-            country: row.get(2),
-        };
-        println!("Author {} is from {}", author.name, author.country);
+        println!("Badge: {}, Username: {}, Access Level {}", user.badge, user.username, user.level);
     }
 
     Ok(())
