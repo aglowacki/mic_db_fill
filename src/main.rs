@@ -85,9 +85,13 @@ fn main()
                 println!("export counts png");
                 config.export_counts_png = true;
             }
+            else if args[i] == "-t"
+            {
+                println!("testing database conn");
+                database::db_print_users().unwrap();
+            }
         }
-        database::db_print_users().unwrap();
-        let _ = saerch_hdf5(config);
+        //let _ = saerch_hdf5(config);
     }
     else 
     {
