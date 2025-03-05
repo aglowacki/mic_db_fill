@@ -1,70 +1,38 @@
-//use std::{arch::aarch64::int32x2x2_t, array};
-
-use ndarray::{Array2};
 use std::env;
-use walkdir::WalkDir;
-use image::{GrayImage};
-
-mod dataset;
-use dataset::XrfDataset;
+use std::fs::File;
+use std::io::{self, Read};
+use reqwest::{blocking};
 
 mod database;
+mod data_walker;
+mod beamtime;
+mod synco_runs;
 
-
-struct Config
+fn read_json_from_file(file_path: &str) -> Result<String, io::Error> 
 {
-    recursive: bool,
-    export_counts_png: bool,
-    directory: String,
+    // Open the file
+    let mut file = File::open(file_path)?;
+
+    // Read the file contents into a string
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    Ok(contents)
 }
 
-
-
-fn array_to_image(arr: Array2<f32>) -> GrayImage 
+fn read_json_from_url(url_path: &str) -> Result<String, reqwest::Error> 
 {
-    assert!(arr.is_standard_layout());
-
-    let (height, width) = arr.dim();
-    let raw_f32 = arr.into_raw_vec();
-    let max_val  = raw_f32.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
-    let min_val = raw_f32.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
-    let f_range = max_val - min_val;
-    let raw_1d = raw_f32.iter().map(|&x| (255.0 * (x - min_val) / f_range) as u8).collect::<Vec<u8>>();
-    GrayImage::from_raw(width as u32, height as u32, raw_1d).expect("ERROR: container should have the right size for the image dimensions")
-}
-
-
-fn saerch_hdf5(config:Config) -> Result<(), hdf5::Error> 
-{
-    for entry in WalkDir::new(config.directory)
-            .follow_links(true)
-            .into_iter()
-            .filter_map(|e| e.ok()) {
-        let f_name = entry.file_name().to_string_lossy();
-        //let sec = entry.metadata()?.modified()?;
-
-        //if f_name.ends_with(".h50") && sec.elapsed()?.as_secs() < 86400 
-        if f_name.ends_with(".h50")
-        {
-            let mut dataset = XrfDataset::new();
-            dataset.load_from_hdf5(entry.path().to_str().unwrap()).unwrap();
-        }
-        /*
-        else if f_name.ends_with(".h51")
-        {
-            let _ = read_hdf5(entry.path().to_str().unwrap());
-        }
-        */ 
-    }
-
-    Ok(())
+    let resp = reqwest::blocking::get(url_path)?;
+    let body = resp.text()?;
+    Ok(body)
 }
 
 fn help()
 {
-    println!("mic_db_fill <options> directory");
-    println!("\t -r : recursive scan");
-    println!("\t -e : export counts png");
+    eprintln!("Usage: [--test-users | --insert-runs | --get-beamtime | --from-file --from-url] ");
+    //eprintln!("mic_db_fill <options> directory");
+    //eprintln!("\t -r : recursive scan");
+    //eprintln!("\t -e : export counts png");
 }
 
 fn main() 
@@ -72,7 +40,11 @@ fn main()
     let args = env::args().collect::<Vec<String>>();
     if args.len() > 1
     {
-        let mut config = Config {recursive: false, export_counts_png: false, directory: args[args.len()-1].to_owned() };
+        let mut json_data = String::new();
+        let mut expr_lastname = String::new();
+        let mut opt_insert_runs = false;
+        let mut opt_get_beam_time = false;
+        let mut config = data_walker::Config::new();
         for i in 1..args.len()
         {
             if args[i] == "-r"
@@ -85,11 +57,49 @@ fn main()
                 println!("export counts png");
                 config.export_counts_png = true;
             }
-            else if args[i] == "-t"
+            else if args[i] == "--test-users"
             {
                 println!("testing database conn");
                 database::db_print_users().unwrap();
             }
+            else if args[i] == "--from-file"
+            {
+                let file_path = &args[i+1];
+                println!("reading from file {}", file_path);
+                json_data = match read_json_from_file(file_path) 
+                {
+                    Ok(data) => data,
+                    Err(e) =>  String::new(),
+                };
+            }
+            else if args[i] == "--from-url"
+            {
+                let url_path = &args[i+1];
+                println!("reading from url {}", url_path);
+                json_data = match read_json_from_url(url_path) 
+                {
+                    Ok(data) => data,
+                    Err(e) =>  String::new(),
+                };
+            }
+            else if args[i] == "--insert-runs"
+            {
+                opt_insert_runs = true;
+            }
+            else if args[i] == "--get-beamtime"
+            {
+                opt_get_beam_time = true;
+                expr_lastname = args[i+1].clone();
+            }
+        }
+        
+        if opt_insert_runs && json_data.len() > 0
+        {
+            synco_runs::fill_syncotron_runs(&json_data).unwrap();
+        }
+        if opt_get_beam_time && json_data.len() > 0 && expr_lastname.len() > 0
+        {
+            beamtime::parse_activity(&json_data, &expr_lastname);
         }
         //let _ = saerch_hdf5(config);
     }
