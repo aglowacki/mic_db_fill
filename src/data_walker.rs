@@ -24,7 +24,7 @@ impl Config
         }
     }
 }
-
+/*
 fn array_to_image(arr: Array2<f32>) -> GrayImage 
 {
     assert!(arr.is_standard_layout());
@@ -37,7 +37,7 @@ fn array_to_image(arr: Array2<f32>) -> GrayImage
     let raw_1d = raw_f32.iter().map(|&x| (255.0 * (x - min_val) / f_range) as u8).collect::<Vec<u8>>();
     GrayImage::from_raw(width as u32, height as u32, raw_1d).expect("ERROR: container should have the right size for the image dimensions")
 }
-
+*
 
 pub fn saerch_hdf5(config:Config) -> Result<(), hdf5::Error> 
 {
@@ -54,13 +54,14 @@ pub fn saerch_hdf5(config:Config) -> Result<(), hdf5::Error>
             let mut dataset = dataset::XrfDataset::new();
             dataset.load_from_hdf5(entry.path().to_str().unwrap()).unwrap();
         }
-        /*
-        else if f_name.ends_with(".h51")
-        {
-            let _ = read_hdf5(entry.path().to_str().unwrap());
-        }
-        */ 
+        
+        //else if f_name.ends_with(".h51")
+        //{
+        //    let _ = read_hdf5(entry.path().to_str().unwrap());
+        //}
+         
     }
 
     Ok(())
 }
+*/

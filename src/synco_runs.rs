@@ -25,9 +25,9 @@ impl SyncotronRun
 
 }
 
-pub fn fill_syncotron_runs(json_data: &str) -> Result<(), Error> 
+pub fn fill_syncotron_runs(json_data: &str) -> Result<(), postgres::Error> 
 {
-    let psql_conn_str = env::var("SVC_PSQL_CONN_STR").unwrap();
+    let psql_conn_str = env::var("SVC_PSQL_CONN_STR").unwrap_or(String::from("postgresql://localhost/mydata"));
     let mut client = Client::connect(&psql_conn_str, NoTls)?; 
 
     let runs: Vec<SyncotronRun> = serde_json::from_str(json_data).expect("Failed to parse JSON");

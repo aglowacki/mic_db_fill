@@ -1,224 +1,214 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use chrono::{DateTime, Utc};
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Activity {
-    activityId: Option<i64>,
-    scheduleId: Option<i64>,
-    activityName: Option<String>,
-    startTime: Option<String>,
-    endTime: Option<String>,
-    duration: Option<i64>,
-    utilization: Option<i64>,
-    parentActivityId: Option<i64>,
-    activityType: ActivityType,
-    beamtime: Beamtime,
-    experimentId: Option<i64>,
-    station: Station,
-    version: Option<i64>,
-    activityComment: Option<String>,
-    user: Option<String>,
-    activityMessageConfig: ActivityMessageConfig,
-    timeUnused: Option<i64>,
-    displayColor: Option<i64>,
-    clientFkId: Option<i64>,
-}
+// GET /sched-api/beamtimeRequests/findBeamtimeRequestsByRunAndBeamline/{schedulingPeriod}/{beamlineId}
 
-#[derive(Serialize, Deserialize, Debug)]
-struct ActivityType {
-    activityTypeId: Option<i64>,
-    activityTypeName: Option<String>,
-    activityTypeDescription: Option<String>,
-    systemActivityFlag: Option<i64>,
-    version: Option<i64>,
-}
-#[derive(Serialize, Deserialize, Debug)]
-struct preferredDate
-{
-        preferDtSeq: i64,
-        gupId: i64,
-        beamtimeId: i64,
-        dateFrom: String,
-        dateTo: String   
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Beamtime {
-    beamtimeId: Option<i64>,
-    beamlineFirst: Option<Beamline>,
-    beamlineSecond: Option<Beamline>,
-    beamlineThird: Option<Beamline>,
-    grantedBeamline: Beamline,
-    scheduledBeamline1: Beamline,
-    scheduledBeamline2: Option<Beamline>,
-    scheduledBeamline3: Option<Beamline>,
-    scheduledBeamline4: Option<Beamline>,
-    proposal: Proposal,
-    proposalStatus: ProposalStatus,
-    schedulingPeriods: SchedulingPeriods,
-    preferredDates: Vec<preferredDate>,
-    requestedDate: Option<String>,
-    actualShifts: Option<i64>,
-    grantedShifts: Option<i64>,
-    scheduledShifts: Option<i64>,
-    scheduledShifts2: Option<i64>,
-    scheduledShifts3: Option<i64>,
-    scheduledShifts4: Option<i64>,
-    equipment: Option<String>,
-    rapidAccessFlag: Option<String>,
-    anyBeamlineFlag: Option<String>,
-    timeUnit: Option<i64>,
-    declinedFlag: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Beamline {
-    beamlineNum: Option<i64>,
-    beamlineId: Option<String>,
-    beamlineIdOld: Option<String>,
-    beamlineName: Option<String>,
-    operator: Operator,
-    source: Source,
-    sector: Sector,
-    inactiveDate: Option<String>,
-    stations: Vec<Station>,
-    supportedTechniques: Vec<SupportedTechnique>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Operator {
-    operatorId: Option<i64>,
+    operatorId: Option<i32>,
     operatorName: Option<String>,
     operatorShortName: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Source {
-    sourceId: Option<i64>,
+    sourceId: Option<i32>,
     sourceName: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Sector {
-    sectorId: Option<i64>,
+    sectorId: Option<i32>,
     sectorName: Option<String>,
-    sectorNum: Option<i64>,
+    sectorNum: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Station {
-    stationId: Option<i64>,
+    stationId: Option<i32>,
     stationName: Option<String>,
-    inactiveDate: Option<String>,
-    createdDate: Option<String>,
-    beamLineNum: Option<i64>,
+    inactiveDate: Option<DateTime<Utc>>,
+    createdDate: Option<DateTime<Utc>>,
+    beamLineNum: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct SupportedTechnique {
-    supportedTechniquesId: SupportedTechniquesId,
-    orderColumn: Option<i64>,
-    collaborationOnlyFlag: Option<String>,
-    technique: Technique,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct SupportedTechniquesId {
-    techniqueId: Option<i64>,
-    beamLineNum: Option<i64>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Technique {
-    techniqueId: Option<i64>,
+    techniqueId: Option<i32>,
     techniqueName: Option<String>,
     category: Option<String>,
     inactiveFlag: Option<String>,
     subCategory: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Proposal {
-    gupId: Option<i64>,
-    proposalTitle: Option<String>,
-    proprietaryFlag: Option<String>,
-    pupId: Option<i64>,
-    submittedDate: Option<String>,
-    totalShiftsRequested: Option<i64>,
-    mailInFlag: Option<String>,
-    proposalStatus: ProposalStatus,
-    proposalType: ProposalType,
-    experimenters: Vec<Experimenter>,
+#[derive(Serialize, Deserialize)]
+struct SupportedTechniquesId {
+    techniqueId: Option<i32>,
+    beamLineNum: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
+struct SupportedTechniques {
+    supportedTechniquesId: Option<SupportedTechniquesId>,
+    orderColumn: Option<i32>,
+    collaborationOnlyFlag: Option<String>,
+    technique: Option<Technique>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Beamline {
+    beamlineNum: Option<i32>,
+    beamlineId: Option<String>,
+    beamlineIdOld: Option<String>,
+    beamlineName: Option<String>,
+    operator: Option<Operator>,
+    source: Option<Source>,
+    sector: Option<Sector>,
+    getinactiveDate: Option<DateTime<Utc>>,
+    stations: Option<Vec<Station>>,
+    supportedTechniques: Option<Vec<SupportedTechniques>>,
+}
+
+#[derive(Serialize, Deserialize)]
 struct ProposalStatus {
-    statusId: Option<i64>,
-    statusDesc: Option<String>,
-    statusType: Option<String>,
+    getstatusId: Option<i32>,
+    getstatusDesc: Option<String>,
+    getstatusType: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct ProposalType {
     typeId: Option<String>,
     typeDescription: Option<String>,
     inactiveFlag: Option<String>,
-    display: String,
+    display: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Experimenter {
-    gupExperimenterId: i64,
-    badge: String,
-    firstName: String,
-    lastName: String,
-    institution: String,
-    email: String,
+    gupExperimenterId: Option<i32>,
+    badge: Option<String>,
+    firstName: Option<String>,
+    lastName: Option<String>,
+    institution: Option<String>,
+    email: Option<String>,
     piFlag: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
+struct Proposal {
+    gupId: Option<i32>,
+    proposalTitle: Option<String>,
+    proprietaryFlag: Option<String>,
+    pupId: Option<i32>,
+    submittedDate: Option<DateTime<Utc>>,
+    totalShiftsRequested: Option<i32>,
+    mailInFlag: Option<String>,
+    proposalStatus: Option<ProposalStatus>,
+    proposalType: Option<ProposalType>,
+    experimenters: Option<Vec<Experimenter>>,
+}
+
+#[derive(Serialize, Deserialize)]
 struct SchedulingPeriods {
-    runStartDate: Option<String>,
-    runEndDate: Option<String>,
-    notifyUserDate: Option<String>,
+    runStartDate: Option<DateTime<Utc>>,
+    runEndDate: Option<DateTime<Utc>>,
+    notifyUserDate: Option<DateTime<Utc>>,
     schedulingPeriods: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct ActivityMessageConfig {
-    activityMessageConfigId: Option<i64>,
-    hold: Option<i64>,
-    enableActivityScheduled: Option<i64>,
-    activityScheduledStatus: Option<i64>,
-    enableEsafReminder: Option<i64>,
-    esafReminderStatus: Option<i64>,
-    enableExpReminder: Option<i64>,
-    expReminderStatus: Option<i64>,
-    enablePubReminder: Option<i64>,
-    pubReminderStatus: Option<i64>,
-    customText: Option<String>,
-    fromEmailAddr: Option<String>,
-    version: Option<i64>,
-    enableEndExpReminder: Option<i64>,
-    expEndReminderStatus: Option<i64>,
+#[derive(Serialize, Deserialize)]
+struct PreferredDate {
+    preferDtSeq: Option<i32>,
+    gupId: Option<i32>,
+    beamtimeId: Option<i32>,
+    dateFrom: Option<DateTime<Utc>>,
+    dateTo: Option<DateTime<Utc>>,
 }
 
-pub fn parse_activity(json_data: &str, experimenter_lastname: &str)
-{
-    let activities: Vec<Activity> = serde_json::from_str(json_data).unwrap();
-    activities.iter().for_each(|activity| 
-    {
-        activity.beamtime.proposal.experimenters.iter().for_each(|experimenter| 
-        {
-            if experimenter.lastName == experimenter_lastname
-            {
-                println!("{:?} {:?}", activity.activityId, experimenter);
-            }
-        });
-    });
-    
-    //println!("{:?}", activity);
+#[derive(Serialize, Deserialize)]
+struct Beamtime {
+    beamtimeId: Option<i32>,
+    beamlineFirst: Option<Beamline>,
+    beamlineSecond: Option<Beamline>,
+    beamlineThird: Option<Beamline>,
+    grantedBeamline: Option<Beamline>,
+    scheduledBeamline1: Option<Beamline>,
+    scheduledBeamline2: Option<Beamline>,
+    scheduledBeamline3: Option<Beamline>,
+    scheduledBeamline4: Option<Beamline>,
+    proposal: Option<Proposal>,
+    proposalStatus: Option<ProposalStatus>,
+    getschedulingPeriods: Option<SchedulingPeriods>,
+    preferredDates: Option<Vec<PreferredDate>>,
+    requestedDate: Option<DateTime<Utc>>,
+    actualShifts: Option<i32>,
+    grantedShifts: Option<i32>,
+    scheduledShifts: Option<i32>,
+    scheduledShifts2: Option<i32>,
+    scheduledShifts3: Option<i32>,
+    scheduledShifts4: Option<i32>,
+    equipment: Option<String>,
+    rapidAccessFlag: Option<String>,
+    anyBeamlineFlag: Option<String>,
+    timeUnit: Option<i32>,
+    declinedFlag: Option<String>,
+}
 
-    return;
+#[derive(Serialize, Deserialize)]
+struct Run {
+    runId: Option<i32>,
+    runName: Option<String>,
+    startTime: Option<DateTime<Utc>>,
+    endTime: Option<DateTime<Utc>>,
+    version: Option<i32>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Data {
+    beamtimeId: Option<i32>,
+    schedulingPeriod: Option<String>,
+    beamlineId: Option<String>,
+    customGroup: Option<String>,
+    piLastName: Option<String>,
+    timeUnitString: Option<String>,
+    requestedShifts: Option<i32>,
+    grantedShifts: Option<i32>,
+    beamlineScheduledShifts: Option<i32>,
+    totalScheduledShifts: Option<i32>,
+    beamlineRank: Option<String>,
+    proposalTitle: Option<String>,
+    piFirstName: Option<String>,
+    piInstitution: Option<String>,
+    typeDescription: Option<String>,
+    localAccess: Option<String>,
+    status: Option<String>,
+    proposalType: Option<String>,
+    loggedInBadgeNo: Option<String>,
+    beamtime: Option<Beamtime>,
+    beamline: Option<Beamline>,
+    proposal: Option<Proposal>,
+    run: Option<Run>,
+    activiityTypeName: Option<String>,
+}
+
+pub fn parse_beamtime(json_data: &str, experimenter_lastname: &str) -> Result<(), serde_json::Error>
+{
+    let beamtime: Vec<Data> = serde_json::from_str(json_data)?;
+    beamtime.iter().for_each(|activity: &Data| 
+    {
+        if activity.piLastName.is_some()
+        {
+            let pi_last_name = activity.piLastName.as_ref().unwrap();
+            if experimenter_lastname == pi_last_name
+            {   
+                println!("{:?} {:?} {:?} {:?}", activity.piLastName, activity.activiityTypeName, activity.status, activity.proposalTitle);
+            }
+            else
+            {
+                println!("experimenter: {:?}", pi_last_name);
+            }
+        }
+    });
+    Ok(())
 }

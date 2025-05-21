@@ -67,7 +67,7 @@ impl XrfDataset
                 analyzed_counts.counts_data.push(data);
                 //println!("{}", chan_names[i]);
                 //let img = array_to_image(data);
-                //img.save(format!("/Users/aglowacki/data/tmp/{}.png", chan_names[i])).unwrap();
+                //img.save(format!("/Users/aglowacki/data/tmp/{}.png", chan_names[i])).unwrap_or();
             }
             self.analyzed_data.push(analyzed_counts);
         }
