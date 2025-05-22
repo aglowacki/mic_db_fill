@@ -1,29 +1,8 @@
 use ndarray::{Array2};
 use walkdir::WalkDir;
+use std::fs;
 use image::{GrayImage};
 
-
-pub mod dataset;
-
-pub struct Config
-{
-    pub recursive: bool,
-    pub export_counts_png: bool,
-    pub directory: String,
-}
-
-impl Config
-{
-    pub fn new() -> Config
-    {
-        Config
-        {
-            recursive: false,
-            export_counts_png: false,
-            directory: String::new(),
-        }
-    }
-}
 /*
 fn array_to_image(arr: Array2<f32>) -> GrayImage 
 {
@@ -37,31 +16,45 @@ fn array_to_image(arr: Array2<f32>) -> GrayImage
     let raw_1d = raw_f32.iter().map(|&x| (255.0 * (x - min_val) / f_range) as u8).collect::<Vec<u8>>();
     GrayImage::from_raw(width as u32, height as u32, raw_1d).expect("ERROR: container should have the right size for the image dimensions")
 }
-*
+*/
 
-pub fn saerch_hdf5(config:Config) -> Result<(), hdf5::Error> 
+pub fn get_dirs(directory:&str) -> Result<Vec<Option<String>>, std::io::Error>
 {
-    for entry in WalkDir::new(config.directory)
+    let mut dir_vec: Vec<Option<String>> = Vec::new();
+    
+    for entry in fs::read_dir(directory).unwrap() 
+    {
+        if entry.is_ok()
+        {
+            let entry = entry.unwrap();
+            if entry.metadata().unwrap().is_dir() 
+            {
+                dir_vec.push(entry.path().to_str().unwrap().to_string().into());
+            }
+        }
+    }
+    Ok(dir_vec)
+}
+
+pub fn saerch_hdf5(directory:&str, extentions: &Vec<String>) -> Result<Vec<String>, hdf5::Error> 
+{
+    let mut hdf5_files: Vec<String> = Vec::new();
+    for entry in WalkDir::new(directory)
             .follow_links(true)
             .into_iter()
-            .filter_map(|e| e.ok()) {
+            .filter_map(|e| e.ok()) 
+    {
         let f_name = entry.file_name().to_string_lossy();
         //let sec = entry.metadata()?.modified()?;
 
         //if f_name.ends_with(".h50") && sec.elapsed()?.as_secs() < 86400 
-        if f_name.ends_with(".h50")
+        for ext in extentions
         {
-            let mut dataset = dataset::XrfDataset::new();
-            dataset.load_from_hdf5(entry.path().to_str().unwrap()).unwrap();
-        }
-        
-        //else if f_name.ends_with(".h51")
-        //{
-        //    let _ = read_hdf5(entry.path().to_str().unwrap());
-        //}
-         
+            if f_name.ends_with(ext)
+            {
+                hdf5_files.push(entry.path().to_str().unwrap().to_string());
+            }
+        } 
     }
-
-    Ok(())
+    Ok(hdf5_files)
 }
-*/

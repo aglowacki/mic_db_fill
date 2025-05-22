@@ -1,5 +1,6 @@
 use std::env;
 use std::fs::File;
+use std::path::Path;
 use std::io::{self, Read};
 use reqwest;
 use clap::Parser;
@@ -12,12 +13,17 @@ mod activity;
 mod beamtime;
 mod synco_runs;
 
+static STR_URL_ACTIVITY_HEADER: &'static str = "https://beam-api.aps.anl.gov/beamline-scheduling//sched-api/activity/findByRunNameAndBeamlineId/";
+static STR_URL_BEAMTIME_HEADER: &'static str = "https://beam-api.aps.anl.gov/beamline-scheduling/sched-api/beamtimeRequests/findBeamtimeRequestsByRunAndBeamline/";
+static STR_IMG_DAT: &'static str = "img.dat";
+static NUM_DETECTORS: u32 = 8;
+
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Scan recursively
-    #[arg(short, long, action)]
-    scan_recursive: bool,
+    /// How deep to search for datasets
+    #[arg(short, long, default_value_t=2)]
+    num_recursive: u32,
 
     /// Export counts as png 
     #[arg(short, long, action)]
@@ -45,7 +51,7 @@ struct Args {
 
     /// Experimenter last name
     #[arg(short, long)]
-    pi_last_name: Option<String>,
+    search_dir: Option<String>,
 }
 
 
@@ -79,67 +85,114 @@ async fn read_json_from_url(url_path: &str) -> Result<String, reqwest::Error>
     Ok(body,)
 }
 
-fn help()
+fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32, activities: &Vec<activity::Activity> ,verbose: bool) -> Result<(), std::io::Error>
 {
-    eprintln!("Usage: [--test-users | --insert-runs | --get-beamtime | --from-file --from-url] ");
-    //eprintln!("mic_db_fill <options> directory");
-    //eprintln!("\t -r : recursive scan");
-    //eprintln!("\t -e : export counts png");
+    let dirs = data_walker::get_dirs(direcotry).unwrap();
+    for dir in dirs
+    {
+        if let Some(dir_name) = dir
+        {
+            if verbose
+            {
+                println!("dir: {}", dir_name);
+            }
+            if dir_name.ends_with(STR_IMG_DAT)
+            {
+                let hdf5_files = data_walker::saerch_hdf5(&dir_name, search_ext).unwrap();
+                println!("found {} hdf5 files in {}", hdf5_files.len(), dir_name);
+
+                if hdf5_files.len() > 0
+                {
+                    let path = Path::new(&direcotry);
+                    if let Some(pi_name) = path.file_stem()
+                    {
+                        //println!("{}", last_folder.to_str().unwrap());
+                        let (found_activity, found_experiementer) = activity::search_for_pi_activity(activities, pi_name.to_str().unwrap());
+                        if found_activity.is_some()
+                        {
+                            let activity = found_activity.unwrap();
+                            println!("{:?} {:?} {:?}", activity.activityId, activity.experimentId, pi_name);
+                            println!{"{:?} {:?} {:?}", activity.beamtime.proposal.gupId, activity.beamtime.proposal.proposalTitle, activity.beamtime.proposalStatus};
+                        }
+                        else
+                        {
+                             println!{"{:?}", found_activity};
+                        }
+                    }
+                    /*
+                    for hdf5_file in hdf5_files
+                    {
+                        println!("found hdf5 file {}", hdf5_file);
+                        //let mut xrf_dataset = data_walker::XrfDataset::new();
+                        //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
+                    }
+                    */
+                }
+            }
+            else if cur_depth > 0
+            {
+                let new_depth = cur_depth - 1;
+                let _ = search_for_datasets(&dir_name, search_ext, new_depth, activities, verbose);
+            }               
+        }
+    }
+    Ok(())
 }
 
 #[tokio::main] 
 async fn main() 
 {
     let args = Args::parse();
-    /*    
-    if args.test
+
+    if args.search_dir.is_some()
     {
-        println!("testing database conn");
-        db_user::db_print_users().unwrap();
-    }
-    */
-    if args.pi_last_name.is_some()
-    {
-        let pi_name = args.pi_last_name.clone().unwrap();
-        if args.filename.is_some()
+        if args.run.is_some() && args.beamline.is_some()
         {
-            let filename = args.filename.clone().unwrap();
-            println!("reading from file {}", filename);
-            let json_data = match read_json_from_file(&filename) 
+            let mut beam_schedule: String = String::new();
+            if args.filename.is_some()
             {
-                Ok(data) => data,
-                Err(e) =>  String::new(),
-            };
-            if args.verbose
-            {
-                println!("json data: {}", json_data);
+                let filename = args.filename.clone().unwrap();
+                println!("reading from file {}", filename);
+                beam_schedule = read_json_from_file(&filename).unwrap();
+                if beam_schedule.is_empty()
+                {
+                    println!("Error: file {} is empty", filename);
+                    return;
+                }
+                /*
+                if args.verbose
+                {
+                    println!("file contents: {}", beam_schedule);
+                }
+                */
             }
-            let _ = beamtime::parse_beamtime(&json_data, &pi_name);
-        }
-        else if args.run.is_some() && args.beamline.is_some()
-        {
-            let run = args.run.clone().unwrap();
-            let beamline = args.beamline.clone().unwrap();
-            //let url_path = "https://beam-api.aps.anl.gov/beamline-scheduling/sched-api/beamtimeRequests/findBeamtimeRequestsByRunAndBeamline/2025-1/2-ID-D";
-            //let mut url_path = "https://beam-api.aps.anl.gov/beamline-scheduling/sched-api/beamtimeRequests/findBeamtimeRequestsByRunAndBeamline/".to_owned();
-            let mut url_path = "https://beam-api.aps.anl.gov/beamline-scheduling//sched-api/activity/findByRunNameAndBeamlineId/".to_owned();
-            url_path.push_str(&run);
-            url_path.push_str("/");
-            url_path.push_str(&beamline);
-            println!("reading from url {}", url_path);
-            let json_data = match futures::executor::block_on(read_json_from_url(&url_path))
+            else 
             {
-                Ok(data) => data,
-                Err(e) => panic!("{}",e.to_string()), //println!("{}",e.to_string()),
-            };
-            if args.verbose
-            {
-                println!("json data: {}", json_data);
+                let run = args.run.clone().unwrap();
+                let beamline = args.beamline.clone().unwrap();
+                
+                let mut url_path = STR_URL_ACTIVITY_HEADER.to_owned();
+                url_path.push_str(&run);
+                url_path.push_str("/");
+                url_path.push_str(&beamline);
+                println!("reading from url {}", url_path);
+                beam_schedule = futures::executor::block_on(read_json_from_url(&url_path)).unwrap();
             }
-            //let t  = beamtime::parse_beamtime(&json_data, &pi_name);
-            let t  = activity::parse_activity(&json_data, &pi_name);
-            t.unwrap();
+
+            let activities: Vec<activity::Activity> = serde_json::from_str(&beam_schedule).unwrap();
+
+            let mut search_ext: Vec<String> = Vec::new();
+            search_ext.push(".h5".to_owned());
+            for i in 0..NUM_DETECTORS
+            {
+                let mut h5_ext = ".h5".to_owned();
+                h5_ext.push_str(&i.to_string());
+                search_ext.push(h5_ext);
+            }
+
+
+            search_for_datasets(args.search_dir.as_ref().unwrap(), &search_ext, args.num_recursive, &activities, args.verbose).unwrap();
         }
     }
-    //let _ = saerch_hdf5(config);
+
 }

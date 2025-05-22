@@ -1,253 +1,238 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 // GET /sched-api/activity/findByRunNameAndBeamlineId/{RunName}/{beamlineId}
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Activity {
-    activityId: Option<i64>,
-    scheduleId: Option<i64>,
-    activityName: Option<String>,
-    startTime: Option<String>,
-    endTime: Option<String>,
-    duration: Option<i64>,
-    utilization: Option<i64>,
-    parentActivityId: Option<i64>,
-    activityType: Option<ActivityType>,
-    beamtime: Beamtime,
-    experimentId: Option<i64>,
-    station: Option<Station>,
-    version: Option<i64>,
-    activityComment: Option<String>,
-    user: Option<UserType>,
-    activityMessageConfig: Option<ActivityMessageConfig>,
-    timeUnused: Option<i64>,
-    displayColor: Option<i64>,
-    clientFkId: Option<i64>,
+pub struct Activity {
+    pub activityId: Option<i64>,
+    pub scheduleId: Option<i64>,
+    pub activityName: Option<String>,
+    pub startTime: Option<String>,
+    pub endTime: Option<String>,
+    pub duration: Option<i64>,
+    pub utilization: Option<i64>,
+    pub parentActivityId: Option<i64>,
+    pub activityType: Option<ActivityType>,
+    pub beamtime: Beamtime,
+    pub experimentId: Option<i64>,
+    pub station: Option<Station>,
+    pub version: Option<i64>,
+    pub activityComment: Option<String>,
+    pub user: Option<UserType>,
+    pub activityMessageConfig: Option<ActivityMessageConfig>,
+    pub timeUnused: Option<i64>,
+    pub displayColor: Option<i64>,
+    pub clientFkId: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct UserType {
-    badgeNo: Option<String>,
-    firstName: Option<String>,
-    lastName: Option<String>,
-    name: Option<String>,
-    userName: Option<String>,
-    email: Option<String>,
+pub struct UserType {
+    pub badgeNo: Option<String>,
+    pub firstName: Option<String>,
+    pub lastName: Option<String>,
+    pub name: Option<String>,
+    pub userName: Option<String>,
+    pub email: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ActivityType {
-    activityTypeId: Option<i64>,
-    activityTypeName: Option<String>,
-    activityTypeDescription: Option<String>,
-    systemActivityFlag: Option<i64>,
-    version: Option<i64>,
+pub struct ActivityType {
+    pub activityTypeId: Option<i64>,
+    pub activityTypeName: Option<String>,
+    pub activityTypeDescription: Option<String>,
+    pub systemActivityFlag: Option<i64>,
+    pub version: Option<i64>,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct preferredDate
+pub struct preferredDate
 {
-        preferDtSeq: Option<i64>,
-        gupId: Option<i64>,
-        beamtimeId: Option<i64>,
-        dateFrom: Option<String>,
-        dateTo: Option<String>   
+    pub preferDtSeq: Option<i64>,
+    pub gupId: Option<i64>,
+    pub beamtimeId: Option<i64>,
+    pub dateFrom: Option<String>,
+    pub dateTo: Option<String>   
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Beamtime {
-    beamtimeId: Option<i64>,
-    beamlineFirst: Option<Beamline>,
-    beamlineSecond: Option<Beamline>,
-    beamlineThird: Option<Beamline>,
-    grantedBeamline: Option<Beamline>,
-    scheduledBeamline1: Option<Beamline>,
-    scheduledBeamline2: Option<Beamline>,
-    scheduledBeamline3: Option<Beamline>,
-    scheduledBeamline4: Option<Beamline>,
-    proposal: Proposal,
-    proposalStatus: ProposalStatus,
-    schedulingPeriods: SchedulingPeriods,
-    preferredDates: Vec<preferredDate>,
-    requestedDate: Option<String>,
-    actualShifts: Option<i64>,
-    grantedShifts: Option<i64>,
-    scheduledShifts: Option<i64>,
-    scheduledShifts2: Option<i64>,
-    scheduledShifts3: Option<i64>,
-    scheduledShifts4: Option<i64>,
-    equipment: Option<String>,
-    rapidAccessFlag: Option<String>,
-    anyBeamlineFlag: Option<String>,
-    timeUnit: Option<i64>,
-    declinedFlag: Option<String>,
+pub struct Beamtime {
+    pub beamtimeId: Option<i64>,
+    pub beamlineFirst: Option<Beamline>,
+    pub beamlineSecond: Option<Beamline>,
+    pub beamlineThird: Option<Beamline>,
+    pub grantedBeamline: Option<Beamline>,
+    pub scheduledBeamline1: Option<Beamline>,
+    pub scheduledBeamline2: Option<Beamline>,
+    pub scheduledBeamline3: Option<Beamline>,
+    pub scheduledBeamline4: Option<Beamline>,
+    pub proposal: Proposal,
+    pub proposalStatus: ProposalStatus,
+    pub schedulingPeriods: SchedulingPeriods,
+    pub preferredDates: Vec<preferredDate>,
+    pub requestedDate: Option<String>,
+    pub actualShifts: Option<i64>,
+    pub grantedShifts: Option<i64>,
+    pub scheduledShifts: Option<i64>,
+    pub scheduledShifts2: Option<i64>,
+    pub scheduledShifts3: Option<i64>,
+    pub scheduledShifts4: Option<i64>,
+    pub equipment: Option<String>,
+    pub rapidAccessFlag: Option<String>,
+    pub anyBeamlineFlag: Option<String>,
+    pub timeUnit: Option<i64>,
+    pub declinedFlag: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Beamline {
-    beamlineNum: Option<i64>,
-    beamlineId: Option<String>,
-    beamlineIdOld: Option<String>,
-    beamlineName: Option<String>,
-    operator: Operator,
-    source: Source,
-    sector: Sector,
-    inactiveDate: Option<String>,
-    stations: Vec<Station>,
-    supportedTechniques: Vec<SupportedTechnique>,
+pub struct Beamline {
+    pub beamlineNum: Option<i64>,
+    pub beamlineId: Option<String>,
+    pub beamlineIdOld: Option<String>,
+    pub beamlineName: Option<String>,
+    pub operator: Operator,
+    pub source: Source,
+    pub sector: Sector,
+    pub inactiveDate: Option<String>,
+    pub stations: Vec<Station>,
+    pub supportedTechniques: Vec<SupportedTechnique>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Operator {
-    operatorId: Option<i64>,
-    operatorName: Option<String>,
-    operatorShortName: Option<String>,
+pub struct Operator {
+    pub operatorId: Option<i64>,
+    pub operatorName: Option<String>,
+    pub operatorShortName: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Source {
-    sourceId: Option<i64>,
-    sourceName: Option<String>,
+pub struct Source {
+    pub sourceId: Option<i64>,
+    pub sourceName: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Sector {
-    sectorId: Option<i64>,
-    sectorName: Option<String>,
-    sectorNum: Option<i64>,
+pub struct Sector {
+    pub sectorId: Option<i64>,
+    pub sectorName: Option<String>,
+    pub sectorNum: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Station {
-    stationId: Option<i64>,
-    stationName: Option<String>,
-    inactiveDate: Option<String>,
-    createdDate: Option<String>,
-    beamLineNum: Option<i64>,
+pub struct Station {
+    pub stationId: Option<i64>,
+    pub stationName: Option<String>,
+    pub inactiveDate: Option<String>,
+    pub createdDate: Option<String>,
+    pub beamLineNum: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct SupportedTechnique {
-    supportedTechniquesId: SupportedTechniquesId,
-    orderColumn: Option<i64>,
-    collaborationOnlyFlag: Option<String>,
-    technique: Technique,
+pub struct SupportedTechnique {
+    pub supportedTechniquesId: SupportedTechniquesId,
+    pub orderColumn: Option<i64>,
+    pub collaborationOnlyFlag: Option<String>,
+    pub technique: Technique,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct SupportedTechniquesId {
-    techniqueId: Option<i64>,
-    beamLineNum: Option<i64>,
+pub struct SupportedTechniquesId {
+    pub techniqueId: Option<i64>,
+    pub beamLineNum: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Technique {
-    techniqueId: Option<i64>,
-    techniqueName: Option<String>,
-    category: Option<String>,
-    inactiveFlag: Option<String>,
-    subCategory: Option<String>,
+pub struct Technique {
+    pub techniqueId: Option<i64>,
+    pub techniqueName: Option<String>,
+    pub category: Option<String>,
+    pub inactiveFlag: Option<String>,
+    pub subCategory: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Proposal {
-    gupId: Option<i64>,
-    proposalTitle: Option<String>,
-    proprietaryFlag: Option<String>,
-    pupId: Option<i64>,
-    submittedDate: Option<String>,
-    totalShiftsRequested: Option<i64>,
-    mailInFlag: Option<String>,
-    proposalStatus: Option<ProposalStatus>,
-    proposalType: Option<ProposalType>,
-    experimenters: Vec<Experimenter>,
+pub struct Proposal {
+    pub gupId: Option<i64>,
+    pub proposalTitle: Option<String>,
+    pub proprietaryFlag: Option<String>,
+    pub pupId: Option<i64>,
+    pub submittedDate: Option<String>,
+    pub totalShiftsRequested: Option<i64>,
+    pub mailInFlag: Option<String>,
+    pub proposalStatus: Option<ProposalStatus>,
+    pub proposalType: Option<ProposalType>,
+    pub experimenters: Vec<Experimenter>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ProposalStatus {
-    statusId: Option<i64>,
-    statusDesc: Option<String>,
-    statusType: Option<String>,
+pub struct ProposalStatus {
+    pub statusId: Option<i64>,
+    pub statusDesc: Option<String>,
+    pub statusType: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ProposalType {
-    typeId: Option<String>,
-    typeDescription: Option<String>,
-    inactiveFlag: Option<String>,
-    display: Option<String>,
+pub struct ProposalType {
+    pub typeId: Option<String>,
+    pub typeDescription: Option<String>,
+    pub inactiveFlag: Option<String>,
+    pub display: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Experimenter {
-    gupExperimenterId: i64,
-    badge: String,
-    firstName: String,
-    lastName: String,
-    institution: String,
-    email: Option<String>,
-    piFlag: Option<String>,
+pub struct Experimenter {
+    pub gupExperimenterId: i64,
+    pub badge: String,
+    pub firstName: String,
+    pub lastName: String,
+    pub institution: String,
+    pub email: Option<String>,
+    pub piFlag: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct SchedulingPeriods {
-    runStartDate: Option<String>,
-    runEndDate: Option<String>,
-    notifyUserDate: Option<String>,
-    schedulingPeriods: Option<String>,
+pub struct SchedulingPeriods {
+    pub runStartDate: Option<String>,
+    pub runEndDate: Option<String>,
+    pub notifyUserDate: Option<String>,
+    pub schedulingPeriods: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ActivityMessageConfig {
-    activityMessageConfigId: Option<i64>,
-    hold: Option<i64>,
-    enableActivityScheduled: Option<i64>,
-    activityScheduledStatus: Option<i64>,
-    enableEsafReminder: Option<i64>,
-    esafReminderStatus: Option<i64>,
-    enableExpReminder: Option<i64>,
-    expReminderStatus: Option<i64>,
-    enablePubReminder: Option<i64>,
-    pubReminderStatus: Option<i64>,
-    customText: Option<String>,
-    fromEmailAddr: Option<String>,
-    version: Option<i64>,
-    enableEndExpReminder: Option<i64>,
-    expEndReminderStatus: Option<i64>,
+pub struct ActivityMessageConfig {
+    pub activityMessageConfigId: Option<i64>,
+    pub hold: Option<i64>,
+    pub enableActivityScheduled: Option<i64>,
+    pub activityScheduledStatus: Option<i64>,
+    pub enableEsafReminder: Option<i64>,
+    pub esafReminderStatus: Option<i64>,
+    pub enableExpReminder: Option<i64>,
+    pub expReminderStatus: Option<i64>,
+    pub enablePubReminder: Option<i64>,
+    pub pubReminderStatus: Option<i64>,
+    pub customText: Option<String>,
+    pub fromEmailAddr: Option<String>,
+    pub version: Option<i64>,
+    pub enableEndExpReminder: Option<i64>,
+    pub expEndReminderStatus: Option<i64>,
 }
 
-pub fn parse_activity(json_data: &str, experimenter_lastname: &str) -> Result<(), serde_json::Error>
+pub fn search_for_pi_activity<'a>(activities: &'a Vec<Activity>, experimenter_lastname: &str) -> (Option<&'a Activity>, Option<&'a Experimenter>)
 {
-    let activities: Vec<Activity> = serde_json::from_str(json_data)?;
+    let mut found_act = None;
+    let mut found_exp = None;
     activities.iter().for_each(|activity| 
     {
-        //println!("{:?} {:?} {:?}", activity.activityId, activity.station, activity.experimentId);
-        //println!{"{:?} {:?} {:?} {:?}", activity.beamtime.proposal.gupId, activity.beamtime.proposal.proposalTitle, activity.beamtime.proposal.experimenters, activity.beamtime.proposalStatus};
-                    
-        
-        activity.beamtime.proposal.experimenters.iter().for_each(|experimenter| 
+        activity.beamtime.proposal.experimenters.iter().for_each(|experimenter: &Experimenter| 
         {
             if experimenter.piFlag.is_some() && experimenter.lastName == experimenter_lastname
             {
                 if experimenter.piFlag.is_some() && experimenter.piFlag.as_ref().unwrap() == "Y"
                 {
-                    //println!("{:?} {:?} {:?} {:?}", activity.activityId, activity.station, activity.experimentId, experimenter);
-                    println!("{:?} {:?} {:?}", activity.activityId, activity.experimentId, experimenter);
-                    //println!{"{:?}", activity.beamtime};
-                    println!{"{:?} {:?} {:?}", activity.beamtime.proposal.gupId, activity.beamtime.proposal.proposalTitle, activity.beamtime.proposalStatus};
-                    /*
-                    if let Some(beamline_first) = &activity.beamtime.beamlineFirst 
-                    {
-                        println!("{:?} {:?} {:?}", beamline_first.source.sourceName, beamline_first.sector.sectorName, beamline_first.sector.sectorNum);
-                    }
-                    */
+                    //println!("found pi: {} {}", experimenter.firstName, experimenter.lastName);
+                    found_act = Some(activity);
+                    found_exp = Some(experimenter);
                 }
             }
         });
-        
     });
-    
-    //println!("{:?}", activity);
-
-    Ok(())
+    (found_act, found_exp)
 }
