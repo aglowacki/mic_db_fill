@@ -104,7 +104,7 @@ pub struct DbDataset
 pub fn print_all_user(client: &mut Client) -> Result<(), postgres::Error> 
 {
     
-    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ual.id, ual.level, ual.description FROM users u INNER JOIN user_access_level ut ON u.user_access_level_id = ual.id;", &[])? 
+    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ual.id, ual.level, ual.description FROM users u INNER JOIN user_access_control ut ON u.user_access_control_id = ual.id;", &[])? 
     {
         
         let user = DbUser::from_db(&row);
@@ -117,7 +117,7 @@ pub fn print_all_user(client: &mut Client) -> Result<(), postgres::Error>
 
 pub fn get_user_by_badge(client: &mut Client, badge: u32) -> Result<Option<DbUser>, postgres::Error> 
 {
-    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ual.id, ual.level, ual.description FROM users u INNER JOIN user_access_level ual ON u.user_access_level_id = ual.id WHERE u.badge == {};", &[&badge])? 
+    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ual.id, ual.level, ual.description FROM users u INNER JOIN user_access_control ual ON u.user_access_control_id = ual.id WHERE u.badge == {};", &[&badge])? 
     {
         let user_access_control = DbUserAccessControl {
             id: row.get(6),
