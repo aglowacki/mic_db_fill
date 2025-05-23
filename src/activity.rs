@@ -150,7 +150,7 @@ pub struct Technique {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Proposal {
-    pub gupId: Option<i64>,
+    pub gupId: Option<i32>,
     pub proposalTitle: Option<String>,
     pub proprietaryFlag: Option<String>,
     pub pupId: Option<i64>,

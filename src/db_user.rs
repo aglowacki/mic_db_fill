@@ -1,53 +1,19 @@
 use postgres::Client;
-use std::env;
 
 use crate::activity::{Experimenter, Proposal};
 
-/*
-use r2d2_postgres::postgres::{NoTls, Client};
-use r2d2_postgres::PostgresConnectionManager;
-//---------------------------------------------------------------
-
-#[macro_use]
-extern crate lazy_static;
-
-lazy_static! {
-    static ref POOL: r2d2::Pool<PostgresConnectionManager<NoTls>> = {
-        let manager = PostgresConnectionManager::new(
-            // TODO: PLEASE MAKE SURE NOT TO USE HARD CODED CREDENTIALS!!!
-            "host=localhost user=postgres password=password".parse().unwrap(),
-            NoTls,
-        );
-        r2d2::Pool::new(manager).unwrap()
-    };
-}
-
-
-
-pub fn get_player(id: i32) {
-    // Use global client connection object:
-    let mut client = POOL.get().unwrap();
-    for row in client.query("SELECT * FROM public.\"User\" WHERE \"accountID\"=$1;",&[&id]).unwrap(){
-        let id: i32 = row.get(0);
-        let name: &str = row.get(1);
-
-        println!("found player: {} {}", id, name);
-    }
-}
-    */
 //--------------------------------------------------------------
-
 
 pub struct DbUserType 
 {
-    id: i64,
+    id: i32,
     level: String,
     description: String,
 }
 
 impl DbUserType 
 {
-    pub fn new(my_id: i64, user_type: &str, descr: &str) -> Self 
+    pub fn new(my_id: i32, user_type: &str, descr: &str) -> Self 
     {
         DbUserType { id: my_id, level: String::from(user_type), description: String::from(descr) }
     }
@@ -78,7 +44,7 @@ impl DbUser
 
 pub struct DbProposal
 {
-    id: i64,
+    id: i32,
     title: String,
     proprietaryFlag: String,
     mailInFlag: String,
