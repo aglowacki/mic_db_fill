@@ -152,8 +152,9 @@ fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32
     Ok(())
 }
 
-#[tokio::main] 
-async fn main() 
+//#[tokio::main] 
+//async fn main() 
+fn main()
 {
     let args = Args::parse();
 
