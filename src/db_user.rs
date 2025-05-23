@@ -138,7 +138,7 @@ pub struct DbDataset
 pub fn print_all_user(client: &mut Client) -> Result<(), postgres::Error> 
 {
     
-    for row in client.query("SELECT u.badge,u.username,ut.level FROM users u INNER JOIN user_types ut ON u.user_type_id = ut.id;", &[])? 
+    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ut.id, ut.level, ut.description FROM users u INNER JOIN user_types ut ON u.user_type_id = ut.id;", &[])? 
     {
         
         let user = DbUser::from_db(&row);
