@@ -4,18 +4,18 @@ use crate::activity::{Experimenter, Proposal};
 
 //--------------------------------------------------------------
 
-pub struct DbUserType 
+pub struct DbUserAccessControl
 {
     id: i32,
     level: String,
     description: String,
 }
 
-impl DbUserType 
+impl DbUserAccessControl 
 {
-    pub fn new(my_id: i32, user_type: &str, descr: &str) -> Self 
+    pub fn new(my_id: i32, user_access_control: &str, descr: &str) -> Self 
     {
-        DbUserType { id: my_id, level: String::from(user_type), description: String::from(descr) }
+        DbUserAccessControl { id: my_id, level: String::from(user_access_control), description: String::from(descr) }
     }
 }
 
@@ -27,18 +27,18 @@ pub struct DbUser
     last_name: String,
     institution: String,
     email: String,
-    user_type: DbUserType,
+    user_access_control: DbUserAccessControl,
 }
 
 impl DbUser 
 {
     pub fn from_db(row: &postgres::Row) -> Self 
     {
-        DbUser { badge: row.get(0), username: row.get(1), first_name: row.get(2), last_name: row.get(3), institution: row.get(4), email: row.get(5), user_type: DbUserType::new(row.get(6), row.get(7), row.get(8)) }
+        DbUser { badge: row.get(0), username: row.get(1), first_name: row.get(2), last_name: row.get(3), institution: row.get(4), email: row.get(5), user_access_control: DbUserAccessControl::new(row.get(6), row.get(7), row.get(8)) }
     }
     pub fn from_experimenter(experimenter: &Experimenter) -> Self 
     {
-        DbUser { badge: experimenter.badge.parse::<i32>().unwrap(), username: experimenter.email.clone().unwrap(), first_name: experimenter.firstName.clone(), last_name: experimenter.lastName.clone(), institution: experimenter.institution.clone(), email: experimenter.email.clone().unwrap(), user_type: DbUserType::new(-1 , "Visitor", " ") }
+        DbUser { badge: experimenter.badge.parse::<i32>().unwrap(), username: experimenter.email.clone().unwrap(), first_name: experimenter.firstName.clone(), last_name: experimenter.lastName.clone(), institution: experimenter.institution.clone(), email: experimenter.email.clone().unwrap(), user_access_control: DbUserAccessControl::new(-1 , "Visitor", " ") }
     }
 }
 
@@ -104,12 +104,12 @@ pub struct DbDataset
 pub fn print_all_user(client: &mut Client) -> Result<(), postgres::Error> 
 {
     
-    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ut.id, ut.level, ut.description FROM users u INNER JOIN user_types ut ON u.user_type_id = ut.id;", &[])? 
+    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ual.id, ual.level, ual.description FROM users u INNER JOIN user_access_level ut ON u.user_access_level_id = ual.id;", &[])? 
     {
         
         let user = DbUser::from_db(&row);
         
-        println!("Badge: {}, Username: {}, Access Level {}", user.badge, user.username, user.user_type.level);
+        println!("Badge: {}, Username: {}, Access Level {}", user.badge, user.username, user.user_access_control.level);
     }
 
     Ok(())
@@ -117,9 +117,9 @@ pub fn print_all_user(client: &mut Client) -> Result<(), postgres::Error>
 
 pub fn get_user_by_badge(client: &mut Client, badge: u32) -> Result<Option<DbUser>, postgres::Error> 
 {
-    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ut.id, ut.level, ut.description FROM users u INNER JOIN user_types ut ON u.user_type_id = ut.id WHERE u.badge == {};", &[&badge])? 
+    for row in client.query("SELECT u.badge, u.username, u.first_name, u.last_name, u.institution, u.email, ual.id, ual.level, ual.description FROM users u INNER JOIN user_access_level ual ON u.user_access_level_id = ual.id WHERE u.badge == {};", &[&badge])? 
     {
-        let user_type = DbUserType {
+        let user_access_control = DbUserAccessControl {
             id: row.get(6),
             level: row.get(7),
             description: row.get(8),
@@ -131,9 +131,9 @@ pub fn get_user_by_badge(client: &mut Client, badge: u32) -> Result<Option<DbUse
             last_name: row.get(3),
             institution: row.get(4),
             email: row.get(5),
-            user_type: user_type,
+            user_access_control: user_access_control,
         };
-        println!("Badge: {}, Username: {}, Access Level {}", user.badge, user.username, user.user_type.level);
+        println!("Badge: {}, Username: {}, Access Level {}", user.badge, user.username, user.user_access_control.level);
         return Ok(Some(user));
     }
 
@@ -144,8 +144,6 @@ pub fn get_user_by_badge(client: &mut Client, badge: u32) -> Result<Option<DbUse
 pub fn insert_user(client: &mut Client, user: &DbUser) -> Result<u64, postgres::Error> 
 {
     let query = "INSERT INTO users (badge, username, first_name, last_name, institution, email, ) VALUES ($1, $2, $3, $4, $5, $6, $7)";
-    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&user.badge, &user.username, &user.first_name, &user.last_name, &user.institution, &user.email, &user.user_type.level];
+    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&user.badge, &user.username, &user.first_name, &user.last_name, &user.institution, &user.email, &user.user_access_control.level];
     return client.execute(query, params)
 }   
-
-
