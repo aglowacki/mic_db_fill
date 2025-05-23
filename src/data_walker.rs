@@ -45,9 +45,6 @@ pub fn saerch_hdf5(directory:&str, extentions: &Vec<String>) -> Result<Vec<Strin
             .filter_map(|e| e.ok()) 
     {
         let f_name = entry.file_name().to_string_lossy();
-        //let sec = entry.metadata()?.modified()?;
-
-        //if f_name.ends_with(".h50") && sec.elapsed()?.as_secs() < 86400 
         for ext in extentions
         {
             if f_name.ends_with(ext)

@@ -4,6 +4,7 @@ use std::path::Path;
 use std::io::{self, Read};
 use reqwest;
 use clap::Parser;
+use postgres::{Client, NoTls};
 
 use tokio;
 
@@ -52,6 +53,11 @@ struct Args {
     /// Experimenter last name
     #[arg(short, long)]
     search_dir: Option<String>,
+
+    /// Query db users
+    #[arg(short, long, action)]
+    query_db_users: bool,
+
 }
 
 
@@ -85,7 +91,7 @@ async fn read_json_from_url(url_path: &str) -> Result<String, reqwest::Error>
     Ok(body,)
 }
 
-fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32, activities: &Vec<activity::Activity> ,verbose: bool) -> Result<(), std::io::Error>
+fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32, activities: &Vec<activity::Activity>, db_client: &mut Client, verbose: bool) -> Result<(), std::io::Error>
 {
     let dirs = data_walker::get_dirs(direcotry).unwrap();
     for dir in dirs
@@ -114,25 +120,32 @@ fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32
                             println!("{:?} {:?} {:?}", activity.activityId, activity.experimentId, pi_name);
                             println!{"{:?} {:?} {:?}", activity.beamtime.proposal.gupId, activity.beamtime.proposal.proposalTitle, activity.beamtime.proposalStatus};
                         }
-                        else
+                        if found_experiementer.is_some()
                         {
-                             println!{"{:?}", found_activity};
+                            let experimenter = found_experiementer.unwrap();
+                            let pi_user = db_user::get_user_by_badge(db_client, experimenter.badge.parse::<u32>().unwrap()).unwrap();
+                            if pi_user.is_none()
+                            {
+                                let pi_user = db_user::DbUser::from_experimenter(experimenter);
+                                db_user::insert_user(db_client, &pi_user).unwrap();
+                            }
+                           
                         }
                     }
-                    /*
+                    
                     for hdf5_file in hdf5_files
                     {
                         println!("found hdf5 file {}", hdf5_file);
                         //let mut xrf_dataset = data_walker::XrfDataset::new();
                         //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
                     }
-                    */
+                    
                 }
             }
             else if cur_depth > 0
             {
                 let new_depth = cur_depth - 1;
-                let _ = search_for_datasets(&dir_name, search_ext, new_depth, activities, verbose);
+                let _ = search_for_datasets(&dir_name, search_ext, new_depth, activities, db_client, verbose);
             }               
         }
     }
@@ -144,6 +157,15 @@ async fn main()
 {
     let args = Args::parse();
 
+    let psql_conn_str = env::var("SVC_PSQL_CONN_STR").unwrap_or(String::from("postgresql://localhost/mydata"));
+    let mut db_client = Client::connect(&psql_conn_str, NoTls).unwrap();
+        
+
+    if args.query_db_users
+    {
+        db_user::print_all_user(&mut db_client).unwrap();
+        return;
+    }
     if args.search_dir.is_some()
     {
         if args.run.is_some() && args.beamline.is_some()
@@ -181,17 +203,19 @@ async fn main()
 
             let activities: Vec<activity::Activity> = serde_json::from_str(&beam_schedule).unwrap();
 
-            let mut search_ext: Vec<String> = Vec::new();
-            search_ext.push(".h5".to_owned());
+            let mut analyzed_search_ext: Vec<String> = Vec::new();
+            analyzed_search_ext.push(".h5".to_owned());
             for i in 0..NUM_DETECTORS
             {
                 let mut h5_ext = ".h5".to_owned();
                 h5_ext.push_str(&i.to_string());
-                search_ext.push(h5_ext);
+                analyzed_search_ext.push(h5_ext);
             }
 
+            let mut raw_search_ext: Vec<String> = Vec::new();
+            raw_search_ext.push(".mda".to_owned());
 
-            search_for_datasets(args.search_dir.as_ref().unwrap(), &search_ext, args.num_recursive, &activities, args.verbose).unwrap();
+            search_for_datasets(args.search_dir.as_ref().unwrap(), &analyzed_search_ext, args.num_recursive, &activities,  &mut db_client, args.verbose).unwrap();
         }
     }
 
