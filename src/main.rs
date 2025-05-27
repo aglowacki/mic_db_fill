@@ -143,10 +143,10 @@ impl Config
     {
         if self.verbose
         {
-            println!("searching run : {}", run_name);
+            println!("searching run : {} len {}", run_name, run_name.len());
             for key in self.db_sync_runs.keys().into_iter()
             {
-                println!("{}", key);
+                println!("{} : {}", key, key.len());
             }
         }
         if self.db_sync_runs.contains_key(run_name)
