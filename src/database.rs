@@ -302,7 +302,7 @@ pub fn get_beamlines(db_client: &mut Client, beamlines: &mut std::collections::H
 {
     for row in db_client.query("SELECT id, name, acronym, division, link FROM beamlines", &[])? 
     {
-        beamlines.insert(row.get(1), Beamline 
+        beamlines.insert(row.get(2), Beamline 
         {
             id: row.get(0),
             name: row.get(1),
