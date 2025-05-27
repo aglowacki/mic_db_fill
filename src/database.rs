@@ -167,10 +167,10 @@ pub fn get_access_control(db_client: &mut Client, uac: &mut std::collections::Ha
     for row in db_client.query("SELECT uac.id, uac.level, uac.description FROM user_access_control uac", &[])? 
     {
         //println!("Badge: {}, Username: {}, Access Level {}", user.badge, user.username, user.user_access_control.level);
-        uac.insert(row.get(2), DbUserAccessControl {
-            id: row.get(1),
-            level: row.get(2),
-            description: row.get(3),
+        uac.insert(row.get(1), DbUserAccessControl {
+            id: row.get(0),
+            level: row.get(1),
+            description: row.get(2),
         });
     }
     Ok(())
