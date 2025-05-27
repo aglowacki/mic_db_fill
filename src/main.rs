@@ -141,6 +141,14 @@ impl Config
 
     fn init_run_info(&mut self, run_name: &str, beamline_name: &str)
     {
+        if self.verbose
+        {
+            println!("searching run : {}", run_name);
+            for key in self.db_sync_runs.keys().into_iter()
+            {
+                println!("{}", key);
+            }
+        }
         if self.db_sync_runs.contains_key(run_name)
         {
             let sync_run = self.db_sync_runs.get(run_name).unwrap();
@@ -149,6 +157,14 @@ impl Config
         else 
         {
             println!("Error: could not find run {}", run_name);
+        }
+        if self.verbose
+        {
+            println!("searching beamline : {} ", beamline_name);
+            for key in self.db_beamlines.keys().into_iter()
+            {
+                println!("{}", key);
+            }
         }
         if self.db_beamlines.contains_key(beamline_name)
         {
