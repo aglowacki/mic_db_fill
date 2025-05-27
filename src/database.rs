@@ -98,8 +98,8 @@ pub struct SyncRun
 {
     id: i32,
     pub name: String,
-    start_timestamp: String, // timestamp
-    end_timestamp: String, // timestamp
+    start_timestamp: std::time::SystemTime,
+    end_timestamp: std::time::SystemTime,
 }
 
 impl SyncRun
