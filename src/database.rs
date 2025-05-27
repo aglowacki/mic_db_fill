@@ -152,7 +152,7 @@ impl ExperimenterRole
 #[derive(Debug, Clone, Copy)]
 pub struct Experimenter
 {
-    datasest_id: i32,// integer REFERENCES datasets (id),
+    dataset_id: i32,// integer REFERENCES datasets (id),
     user_badge: i32, //integer REFERENCES users (badge),
     proposal_id: i32, //integer REFERENCES proposals (id),
     experiment_role_id: i32 //integer REFERENCES experiment_roles (id)
@@ -160,9 +160,9 @@ pub struct Experimenter
 
 impl Experimenter
 {
-    pub fn new(dataset_id: i32, user_badge: i32, proposal_id: i32, experiment_role_id: i32) -> Self 
+    pub fn new(ddataset_id: i32, user_badge: i32, proposal_id: i32, experiment_role_id: i32) -> Self 
     {
-        Experimenter { datasest_id: dataset_id, user_badge: user_badge, proposal_id: proposal_id, experiment_role_id: experiment_role_id }
+        Experimenter { dataset_id: ddataset_id, user_badge: user_badge, proposal_id: proposal_id, experiment_role_id: experiment_role_id }
     }
 }
 
@@ -317,8 +317,8 @@ pub fn insert_user(db_client: &mut Client, user: &User) -> Result<u64, postgres:
 
 pub fn insert_experimenter(db_client: &mut Client, user: &Experimenter) -> Result<u64, postgres::Error> 
 {
-    let query = "INSERT INTO experimenters (datasest_id, user_badge, proposal_id, experiment_role_id) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING";
-    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&user.datasest_id, &user.user_badge, &user.proposal_id, &user.experiment_role_id];
+    let query = "INSERT INTO experimenters (dataset_id, user_badge, proposal_id, experiment_role_id) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING";
+    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&user.dataset_id, &user.user_badge, &user.proposal_id, &user.experiment_role_id];
     return db_client.execute(query, params)
 }
 
