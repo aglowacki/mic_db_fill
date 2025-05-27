@@ -1,4 +1,5 @@
 use postgres::Client;
+//use chrono::{DateTime, Utc, NaiveDateTime};
 use crate::activity;
 
 
@@ -117,7 +118,7 @@ pub struct Dataset
     syncotron_run_id: i32,
     scan_type_id: i32,
     data_store_id: i32,
-    acquisition_timestamp: String,
+    acquisition_timestamp: std::time::SystemTime,
     
     /*
     id: i64,
@@ -131,9 +132,14 @@ pub struct Dataset
 
 impl Dataset
 {
-    pub fn new(beamline_id: i32, syncotron_run_id: i32, scan_type_id: i32, data_store_id: i32, acquisition_timestamp: String) -> Self 
+    pub fn new(beamline_id: i32, syncotron_run_id: i32, scan_type_id: i32, data_store_id: i32, acquisition_timestamp: std::time::SystemTime) -> Self 
     {
         Dataset { id: 0, beamline_id: beamline_id, syncotron_run_id: syncotron_run_id, scan_type_id: scan_type_id, data_store_id: data_store_id, acquisition_timestamp: acquisition_timestamp }
+    }
+
+    pub fn get_id(&self) -> i32
+    {
+        return self.id;
     }
 }
 

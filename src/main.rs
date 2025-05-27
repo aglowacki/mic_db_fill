@@ -235,7 +235,7 @@ fn link_experimenters_to_dataset(experimenters: &Vec<Experimenter>, dataset_id: 
     }
 }
 
-fn process_found_activity(activity: &Activity, raw_files: &Vec<String>, config: &Config, db_client: &mut Client)
+fn process_found_activity(activity: &Activity, raw_files: &Vec<data_walker::MyFile>, config: &Config, db_client: &mut Client)
 {
     println!("{:?} {:?}", activity.activityId, activity.experimentId);
     println!{"{:?} {:?} {:?}", activity.beamtime.proposal.gupId, activity.beamtime.proposal.proposalTitle, activity.beamtime.proposalStatus};
@@ -253,22 +253,22 @@ fn process_found_activity(activity: &Activity, raw_files: &Vec<String>, config: 
         let proposal_id:i32 = result2.unwrap();
         for raw_file in raw_files
         {
-            println!("found raw dataset file {}", raw_file);
+            println!("found raw dataset file {}", raw_file.name);
             
             //let mut xrf_dataset = data_walker::XrfDataset::new();
             //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
             let scan_type_id = 0;
             let data_store_id = 0;
             
-            let dataset = database::Dataset::new(config.beamline_id, config.run_id, scan_type_id, data_store_id, "".to_owned());
+            let dataset = database::Dataset::new(config.beamline_id, config.run_id, scan_type_id, data_store_id, raw_file.ctime);
             let result = database::insert_dataset(db_client, &dataset);
             if result.is_err()
             {
-                println!("Error inserting dataset {}: {:?}", raw_file, result.err().unwrap());
+                println!("Error inserting dataset {}: {:?}", raw_file.name, result.err().unwrap());
             }
             else 
             {
-                println!("Inserted dataset {}", raw_file);
+                println!("Inserted dataset {}", raw_file.name);
                 // link experimenter to this dataset
                 let dataset_id = result.unwrap();
                 if dataset_id > -1
@@ -297,8 +297,9 @@ fn search_for_datasets(direcotry: &str, search_raw_ext: &Vec<String>, search_ana
             }
             if dir_name.ends_with(STR_MDA)
             {
-                let raw_files = data_walker::saerch_hdf5(&dir_name, search_raw_ext).unwrap();
-                println!("found {} hdf5 files in {}", raw_files.len(), dir_name);
+                let mut raw_files = Vec::new();
+                data_walker::saerch_for_ext(&dir_name, search_raw_ext, &mut raw_files);
+                println!("found {} files in {}", raw_files.len(), dir_name);
 
                 if raw_files.len() > 0
                 {

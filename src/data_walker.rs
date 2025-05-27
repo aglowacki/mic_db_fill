@@ -1,7 +1,9 @@
-use ndarray::{Array2};
+//use ndarray::{Array2};
 use walkdir::WalkDir;
 use std::fs;
-use image::{GrayImage};
+use std::time::UNIX_EPOCH;
+//use image::{GrayImage};
+
 
 /*
 fn array_to_image(arr: Array2<f32>) -> GrayImage 
@@ -17,6 +19,25 @@ fn array_to_image(arr: Array2<f32>) -> GrayImage
     GrayImage::from_raw(width as u32, height as u32, raw_1d).expect("ERROR: container should have the right size for the image dimensions")
 }
 */
+
+#[derive(Debug, Clone)]
+pub struct MyFile
+{
+    pub name: String,
+    pub ctime: std::time::SystemTime,
+}
+
+impl MyFile
+{
+    pub fn new ( nname: String, created_time_sec: std::time::SystemTime) -> Self
+    {
+        MyFile 
+        {
+            name: nname,
+            ctime: created_time_sec,
+        } 
+    }
+}
 
 pub fn get_dirs(directory:&str) -> Result<Vec<Option<String>>, std::io::Error>
 {
@@ -36,9 +57,8 @@ pub fn get_dirs(directory:&str) -> Result<Vec<Option<String>>, std::io::Error>
     Ok(dir_vec)
 }
 
-pub fn saerch_hdf5(directory:&str, extentions: &Vec<String>) -> Result<Vec<String>, hdf5::Error> 
+pub fn saerch_for_ext(directory:&str, extentions: &Vec<String>, found_files: &mut Vec<MyFile>)
 {
-    let mut hdf5_files: Vec<String> = Vec::new();
     for entry in WalkDir::new(directory)
             .follow_links(true)
             .into_iter()
@@ -49,9 +69,14 @@ pub fn saerch_hdf5(directory:&str, extentions: &Vec<String>) -> Result<Vec<Strin
         {
             if f_name.ends_with(ext)
             {
-                hdf5_files.push(entry.path().to_str().unwrap().to_string());
+                let path = entry.path().to_str().unwrap().to_string();
+                found_files.push(MyFile::new(
+                    path,
+                    entry.metadata().unwrap().created().unwrap()
+                    )
+                );
             }
         } 
     }
-    Ok(hdf5_files)
+    
 }
