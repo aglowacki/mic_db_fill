@@ -167,6 +167,7 @@ fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32
                         
                             let experimenter = found_experiementer.unwrap();
                             let pi_user: database::DbUser = database::DbUser::from_experimenter(experimenter, config.db_access_control.get("Visitor").unwrap());
+                            println!("db insert pi user: {} {}", pi_user.first_name, pi_user.last_name);
                             database::insert_user(db_client, &pi_user).unwrap();
                             database::insert_proposal(db_client, &database::DbProposal::from_proposal(&activity.beamtime.proposal)).unwrap();
 
@@ -266,6 +267,14 @@ fn main()
             database::get_access_control(&mut db_client, &mut config.db_access_control).unwrap();
             search_for_datasets(args.search_dir.as_ref().unwrap(), &analyzed_search_ext, args.num_recursive, &mut config, &mut db_client).unwrap();
         }
+        else
+        {
+            println!("Error: --run and --beamline must be specified when using --search-dir");  
+        }
+    }
+    else 
+    {
+        println!("Error: --search-dir must be specified");
     }
 
 }
