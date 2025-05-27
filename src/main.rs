@@ -167,9 +167,25 @@ fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32
                         
                             let experimenter = found_experiementer.unwrap();
                             let pi_user: database::DbUser = database::DbUser::from_experimenter(experimenter, config.db_access_control.get("Visitor").unwrap());
-                            println!("db insert pi user: {} {}", pi_user.first_name, pi_user.last_name);
-                            database::insert_user(db_client, &pi_user).unwrap();
-                            database::insert_proposal(db_client, &database::DbProposal::from_proposal(&activity.beamtime.proposal)).unwrap();
+                            let result = database::insert_user(db_client, &pi_user);
+                            if result.is_err()
+                            {
+                                println!("Error inserting user {} {}: {:?}", pi_user.first_name, pi_user.last_name, result.err().unwrap());
+                            }
+                            else 
+                            {
+                                println!("Inserted user {} {}", pi_user.first_name, pi_user.last_name);
+                            }
+                            let result2 = database::insert_proposal(db_client, &database::DbProposal::from_proposal(&activity.beamtime.proposal));
+                            if result2.is_err()
+                            {
+                                println!("Error inserting proposal {:?}: {:?}", activity.activityId, result2.err().unwrap());
+                            }
+                            else 
+                            {
+                                println!("Inserted proposal {:?}", activity.activityId);
+                            }
+
 
                             for hdf5_file in hdf5_files
                             {

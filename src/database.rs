@@ -178,8 +178,8 @@ pub fn get_access_control(db_client: &mut Client, uac: &mut std::collections::Ha
 
 pub fn insert_user(db_client: &mut Client, user: &DbUser) -> Result<u64, postgres::Error> 
 {
-    let query = "INSERT INTO users (badge, username, first_name, last_name, institution, email, ) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING";
-    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&user.badge, &user.username, &user.first_name, &user.last_name, &user.institution, &user.email, &user.user_access_control.level];
+    let query = "INSERT INTO users (badge, username, first_name, last_name, institution, email, user_access_control_id) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING";
+    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&user.badge, &user.username, &user.first_name, &user.last_name, &user.institution, &user.email, &user.user_access_control.id];
     return db_client.execute(query, params)
 }
 
