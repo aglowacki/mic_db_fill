@@ -141,8 +141,7 @@ impl Dataset
 pub struct ExperimenterRole
 {
     id: i32,
-    name: String,
-    description: String,
+    role: String,
 }
 
 impl ExperimenterRole
@@ -253,13 +252,12 @@ pub fn get_access_control(db_client: &mut Client, uac: &mut std::collections::Ha
 
 pub fn get_experimenter_roles(db_client: &mut Client, roles: &mut std::collections::HashMap<String, ExperimenterRole>) -> Result<(), postgres::Error> 
 {
-    for row in db_client.query("SELECT id, name, description FROM experiment_roles", &[])? 
+    for row in db_client.query("SELECT id, role FROM experiment_roles", &[])? 
     {
         roles.insert(row.get(1), ExperimenterRole 
         {
             id: row.get(0),
-            name: row.get(1),
-            description: row.get(2),
+            role: row.get(1),
         });
     }
     Ok(())
