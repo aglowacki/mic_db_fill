@@ -160,9 +160,9 @@ pub struct Experimenter
 
 impl Experimenter
 {
-    pub fn new(ddataset_id: i32, user_badge: i32, proposal_id: i32, experiment_role_id: i32) -> Self 
+    pub fn new(dataset_id: i32, user_badge: i32, proposal_id: i32, experiment_role_id: i32) -> Self 
     {
-        Experimenter { dataset_id: ddataset_id, user_badge: user_badge, proposal_id: proposal_id, experiment_role_id: experiment_role_id }
+        Experimenter { dataset_id: dataset_id, user_badge: user_badge, proposal_id: proposal_id, experiment_role_id: experiment_role_id }
     }
 }
 

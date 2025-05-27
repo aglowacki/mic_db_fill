@@ -265,12 +265,12 @@ fn process_found_activity(activity: &Activity, raw_files: &Vec<data_walker::MyFi
     }
     else 
     {
-        println!("Inserted proposal {:?}", activity.activityId);
+        
         let proposal_id:i32 = result2.unwrap();
+        println!("Inserted proposal {:?} with id {}", activity.activityId, proposal_id);
         for raw_file in raw_files
         {
             println!("found raw dataset file {}", raw_file.name);
-            
             //let mut xrf_dataset = data_walker::XrfDataset::new();
             //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
             let scan_type_id = 1; //hard code to step scan. TODO: check if we have netcdf files to tell if fly scan
@@ -283,9 +283,9 @@ fn process_found_activity(activity: &Activity, raw_files: &Vec<data_walker::MyFi
             }
             else 
             {
-                println!("Inserted dataset {}", raw_file.name);
-                // link experimenter to this dataset
                 let dataset_id = result.unwrap();
+                println!("Inserted dataset {} with id: {}", raw_file.name, dataset_id);
+                // link experimenter to this dataset
                 if dataset_id > -1
                 {
                     link_experimenters_to_dataset(&activity.beamtime.proposal.experimenters, dataset_id, proposal_id, config, db_client);
