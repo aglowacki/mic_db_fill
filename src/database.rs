@@ -117,24 +117,15 @@ pub struct Dataset
     beamline_id: i32,
     syncotron_run_id: i32,
     scan_type_id: i32,
-    data_store_id: i32,
+    path: String,
     acquisition_timestamp: std::time::SystemTime,
-    
-    /*
-    id: i64,
-    beamline_id: Beamline,
-    syncotron_run_id: SyncRun,
-    scan_type_id: ScanType,
-    data_store_id: DataStore,
-    acquisition_timestamp: String,
-    */
 }
 
 impl Dataset
 {
-    pub fn new(beamline_id: i32, syncotron_run_id: i32, scan_type_id: i32, data_store_id: i32, acquisition_timestamp: std::time::SystemTime) -> Self 
+    pub fn new(beamline_id: i32, syncotron_run_id: i32, scan_type_id: i32, ppath: &str, acquisition_timestamp: std::time::SystemTime) -> Self 
     {
-        Dataset { id: 0, beamline_id: beamline_id, syncotron_run_id: syncotron_run_id, scan_type_id: scan_type_id, data_store_id: data_store_id, acquisition_timestamp: acquisition_timestamp }
+        Dataset { id: 0, beamline_id: beamline_id, syncotron_run_id: syncotron_run_id, scan_type_id: scan_type_id, path: ppath.to_owned(), acquisition_timestamp: acquisition_timestamp }
     }
 
     pub fn get_id(&self) -> i32
@@ -345,8 +336,8 @@ pub fn insert_proposal(db_client: &mut Client, proposal: &Proposal) -> Result<i3
 
 pub fn insert_dataset(db_client: &mut Client, dataset: &Dataset) -> Result<i32, postgres::Error> 
 {
-    let query = "INSERT INTO datasets (beamline_id, syncotron_run_id, scan_type_id, data_store_id, acquisition_timestamp) VALUES ($1, $2, $3, $4, $5) RETURNING id";
-    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&dataset.beamline_id, &dataset.syncotron_run_id, &dataset.scan_type_id, &dataset.data_store_id, &dataset.acquisition_timestamp];
+    let query = "INSERT INTO datasets (path, acquisition_timestamp, beamline_id, syncotron_run_id, scan_type_id) VALUES ($1, $2, $3, $4, $5) RETURNING id";
+    let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&dataset.path, &dataset.acquisition_timestamp, &dataset.beamline_id, &dataset.syncotron_run_id, &dataset.scan_type_id];
     for row in  db_client.query(query, params)?
     {
         let id:i32 = row.get(0);

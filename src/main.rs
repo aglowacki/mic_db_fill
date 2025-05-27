@@ -273,10 +273,9 @@ fn process_found_activity(activity: &Activity, raw_files: &Vec<data_walker::MyFi
             
             //let mut xrf_dataset = data_walker::XrfDataset::new();
             //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
-            let scan_type_id = 0;
-            let data_store_id = 0;
+            let scan_type_id = 1; //hard code to step scan. TODO: check if we have netcdf files to tell if fly scan
             
-            let dataset = database::Dataset::new(config.beamline_id, config.run_id, scan_type_id, data_store_id, raw_file.ctime);
+            let dataset = database::Dataset::new(config.beamline_id, config.run_id, scan_type_id, &raw_file.name, raw_file.ctime);
             let result = database::insert_dataset(db_client, &dataset);
             if result.is_err()
             {
