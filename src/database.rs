@@ -324,7 +324,7 @@ pub fn insert_experimenter(db_client: &mut Client, user: &Experimenter) -> Resul
 
 pub fn insert_proposal(db_client: &mut Client, proposal: &Proposal) -> Result<i32, postgres::Error> 
 {
-    let query = "INSERT INTO proposals (id, title, proprietaryFlag, mailInFlag, status) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING id";
+    let query = "WITH res as (INSERT INTO proposals (id, title, proprietaryFlag, mailInFlag, status) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING id) SELECT id FROM res UNION ALL SELECT id FROM proposals WHERE title=$2 LIMIT 1;";
     let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&proposal.id, &proposal.title, &proposal.proprietaryFlag, &proposal.mailInFlag, &proposal.status];
     for row in  db_client.query(query, params)?
     {
