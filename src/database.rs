@@ -339,7 +339,7 @@ pub fn insert_proposal(db_client: &mut Client, proposal: &Proposal) -> Result<i3
 
 pub fn insert_dataset(db_client: &mut Client, dataset: &Dataset) -> Result<i32, postgres::Error> 
 {
-    let query = "INSERT INTO datasets (beamline_id, syncotron_run_id, scan_type_id, data_store_id, acquisition_timestamp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id";
+    let query = "INSERT INTO datasets (beamline_id, syncotron_run_id, scan_type_id, data_store_id, acquisition_timestamp) VALUES ($1, $2, $3, $4, $5) RETURNING id";
     let params: &[&(dyn postgres::types::ToSql + Sync)] = &[&dataset.beamline_id, &dataset.syncotron_run_id, &dataset.scan_type_id, &dataset.data_store_id, &dataset.acquisition_timestamp];
     for row in  db_client.query(query, params)?
     {

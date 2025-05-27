@@ -271,7 +271,14 @@ fn process_found_activity(activity: &Activity, raw_files: &Vec<String>, config: 
                 println!("Inserted dataset {}", raw_file);
                 // link experimenter to this dataset
                 let dataset_id = result.unwrap();
-                link_experimenters_to_dataset(&activity.beamtime.proposal.experimenters, dataset_id, proposal_id, config, db_client);
+                if dataset_id > -1
+                {
+                    link_experimenters_to_dataset(&activity.beamtime.proposal.experimenters, dataset_id, proposal_id, config, db_client);
+                }
+                else 
+                {
+                    println!("Failed to insert dataset. ID = -1");    
+                }
             }
         }
     }
