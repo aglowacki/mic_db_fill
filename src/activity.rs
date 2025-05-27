@@ -214,25 +214,3 @@ pub struct ActivityMessageConfig {
     pub enableEndExpReminder: Option<i64>,
     pub expEndReminderStatus: Option<i64>,
 }
-
-pub fn search_for_pi_activity<'a>(activities: &'a Vec<Activity>, experimenter_lastname: &str) -> (Option<&'a Activity>, Option<&'a Experimenter>)
-{
-    let mut found_act = None;
-    let mut found_exp = None;
-    activities.iter().for_each(|activity| 
-    {
-        activity.beamtime.proposal.experimenters.iter().for_each(|experimenter: &Experimenter| 
-        {
-            if experimenter.piFlag.is_some() && experimenter.lastName == experimenter_lastname
-            {
-                if experimenter.piFlag.is_some() && experimenter.piFlag.as_ref().unwrap() == "Y"
-                {
-                    //println!("found pi: {} {}", experimenter.firstName, experimenter.lastName);
-                    found_act = Some(activity);
-                    found_exp = Some(experimenter);
-                }
-            }
-        });
-    });
-    (found_act, found_exp)
-}

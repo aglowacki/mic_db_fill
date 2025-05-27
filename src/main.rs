@@ -1,21 +1,24 @@
 use std::env;
 use std::fs::File;
 use std::path::Path;
+use std::collections::HashMap;
 use std::io::{self, Read};
 use reqwest;
 use clap::Parser;
 use postgres::{Client, NoTls};
 
-use tokio;
+//use tokio;
 
-mod db_user;
+mod database;
 mod data_walker;
 mod activity;
 mod beamtime;
 mod synco_runs;
 
+use activity::{Activity, Experimenter};
+
 static STR_URL_ACTIVITY_HEADER: &'static str = "https://beam-api.aps.anl.gov/beamline-scheduling//sched-api/activity/findByRunNameAndBeamlineId/";
-static STR_URL_BEAMTIME_HEADER: &'static str = "https://beam-api.aps.anl.gov/beamline-scheduling/sched-api/beamtimeRequests/findBeamtimeRequestsByRunAndBeamline/";
+//static STR_URL_BEAMTIME_HEADER: &'static str = "https://beam-api.aps.anl.gov/beamline-scheduling/sched-api/beamtimeRequests/findBeamtimeRequestsByRunAndBeamline/";
 static STR_IMG_DAT: &'static str = "img.dat";
 static NUM_DETECTORS: u32 = 8;
 
@@ -60,6 +63,48 @@ struct Args {
 
 }
 
+struct Config
+{
+    activities: Vec<activity::Activity>,
+    db_staff: Vec<database::DbUser>,
+    db_access_control: HashMap<String, database::DbUserAccessControl>,
+    pub verbose: bool,
+}
+
+impl Config
+{
+    fn new(beam_schedule: &str, verbose: bool) -> Self
+    {
+        Config 
+        { 
+            activities: serde_json::from_str(&beam_schedule).unwrap(),
+            db_staff: Vec::new(),
+            db_access_control: HashMap::new(),
+            verbose: verbose 
+        }
+    }
+    fn search_for_pi_activity(&self, experimenter_lastname: &str) -> (Option<&Activity>, Option<&Experimenter>)
+    {
+        let mut found_act = None;
+        let mut found_exp = None;
+        self.activities.iter().for_each(|activity| 
+        {
+            activity.beamtime.proposal.experimenters.iter().for_each(|experimenter: &Experimenter| 
+            {
+                if experimenter.piFlag.is_some() && experimenter.lastName == experimenter_lastname
+                {
+                    if experimenter.piFlag.is_some() && experimenter.piFlag.as_ref().unwrap() == "Y"
+                    {
+                        //println!("found pi: {} {}", experimenter.firstName, experimenter.lastName);
+                        found_act = Some(activity);
+                        found_exp = Some(experimenter);
+                    }
+                }
+            });
+        });
+        (found_act, found_exp)
+    }
+}
 
 fn read_json_from_file(file_path: &str) -> Result<String, io::Error> 
 {
@@ -91,14 +136,14 @@ async fn read_json_from_url(url_path: &str) -> Result<String, reqwest::Error>
     Ok(body,)
 }
 
-fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32, activities: &Vec<activity::Activity>, db_client: &mut Client, verbose: bool) -> Result<(), std::io::Error>
+fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32, config: &mut Config, db_client: &mut Client) -> Result<(), std::io::Error>
 {
     let dirs = data_walker::get_dirs(direcotry).unwrap();
     for dir in dirs
     {
         if let Some(dir_name) = dir
         {
-            if verbose
+            if config.verbose
             {
                 println!("dir: {}", dir_name);
             }
@@ -113,39 +158,40 @@ fn search_for_datasets(direcotry: &str, search_ext: &Vec<String>, cur_depth: u32
                     if let Some(pi_name) = path.file_stem()
                     {
                         //println!("{}", last_folder.to_str().unwrap());
-                        let (found_activity, found_experiementer) = activity::search_for_pi_activity(activities, pi_name.to_str().unwrap());
-                        if found_activity.is_some()
+                        let (found_activity, found_experiementer) = config.search_for_pi_activity(pi_name.to_str().unwrap());
+                        if found_activity.is_some() && found_experiementer.is_some()
                         {
                             let activity = found_activity.unwrap();
                             println!("{:?} {:?} {:?}", activity.activityId, activity.experimentId, pi_name);
                             println!{"{:?} {:?} {:?}", activity.beamtime.proposal.gupId, activity.beamtime.proposal.proposalTitle, activity.beamtime.proposalStatus};
-                        }
-                        if found_experiementer.is_some()
-                        {
+                        
                             let experimenter = found_experiementer.unwrap();
-                            let pi_user = db_user::get_user_by_badge(db_client, experimenter.badge.parse::<u32>().unwrap()).unwrap();
-                            if pi_user.is_none()
+                            let pi_user: database::DbUser = database::DbUser::from_experimenter(experimenter, config.db_access_control.get("Visitor").unwrap());
+                            database::insert_user(db_client, &pi_user).unwrap();
+                            database::insert_proposal(db_client, &database::DbProposal::from_proposal(&activity.beamtime.proposal)).unwrap();
+
+                            for hdf5_file in hdf5_files
                             {
-                                let pi_user = db_user::DbUser::from_experimenter(experimenter);
-                                db_user::insert_user(db_client, &pi_user).unwrap();
+                                println!("found hdf5 file {}", hdf5_file);
+                                //let mut xrf_dataset = data_walker::XrfDataset::new();
+                                //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
                             }
-                           
+                        }
+                        else 
+                        {
+                            println!("Error: could not find pi activity for {}", pi_name.to_str().unwrap());
                         }
                     }
-                    
-                    for hdf5_file in hdf5_files
+                    else 
                     {
-                        println!("found hdf5 file {}", hdf5_file);
-                        //let mut xrf_dataset = data_walker::XrfDataset::new();
-                        //xrf_dataset.load_from_hdf5(&hdf5_file).unwrap();
-                    }
-                    
+                        println!("Error: could not get last folder name from path {}", direcotry);
+                    }    
                 }
             }
             else if cur_depth > 0
             {
                 let new_depth = cur_depth - 1;
-                let _ = search_for_datasets(&dir_name, search_ext, new_depth, activities, db_client, verbose);
+                let _ = search_for_datasets(&dir_name, search_ext, new_depth, config, db_client);
             }               
         }
     }
@@ -160,11 +206,10 @@ fn main()
 
     let psql_conn_str = env::var("SVC_PSQL_CONN_STR").unwrap_or(String::from("postgresql://localhost/mydata"));
     let mut db_client = Client::connect(&psql_conn_str, NoTls).unwrap();
-        
-
+    
     if args.query_db_users
     {
-        db_user::print_all_user(&mut db_client).unwrap();
+        database::print_all_user(&mut db_client).unwrap();
         return;
     }
     if args.search_dir.is_some()
@@ -202,7 +247,7 @@ fn main()
                 beam_schedule = futures::executor::block_on(read_json_from_url(&url_path)).unwrap();
             }
 
-            let activities: Vec<activity::Activity> = serde_json::from_str(&beam_schedule).unwrap();
+            //let activities: Vec<activity::Activity> = serde_json::from_str(&beam_schedule).unwrap();
 
             let mut analyzed_search_ext: Vec<String> = Vec::new();
             analyzed_search_ext.push(".h5".to_owned());
@@ -216,7 +261,10 @@ fn main()
             let mut raw_search_ext: Vec<String> = Vec::new();
             raw_search_ext.push(".mda".to_owned());
 
-            search_for_datasets(args.search_dir.as_ref().unwrap(), &analyzed_search_ext, args.num_recursive, &activities,  &mut db_client, args.verbose).unwrap();
+            let mut config = Config::new(&beam_schedule, args.verbose);
+            database::get_all_staff_users(&mut db_client, &mut config.db_staff).unwrap();
+            database::get_access_control(&mut db_client, &mut config.db_access_control).unwrap();
+            search_for_datasets(args.search_dir.as_ref().unwrap(), &analyzed_search_ext, args.num_recursive, &mut config, &mut db_client).unwrap();
         }
     }
 
