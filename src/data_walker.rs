@@ -72,11 +72,10 @@ pub fn saerch_for_ext(directory:&str, extentions: &Vec<String>, found_files: &mu
                 let path = entry.path().to_str().unwrap().to_string();
                 found_files.push(MyFile::new(
                     path,
-                    entry.metadata().unwrap().created().unwrap()
+                    entry.metadata().unwrap().created().unwrap_or(std::time::SystemTime::now())
                     )
                 );
             }
         } 
     }
-    
 }
