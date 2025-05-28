@@ -73,6 +73,7 @@ pub struct Beamline
     id: i32,
     name: String,
     acronym: String, 
+    old_acronym: String,
     division: String,
     link: String,
 }
@@ -82,6 +83,21 @@ impl Beamline
     pub fn get_id(&self) -> i32
     {
         return self.id;
+    }
+    pub fn contains_acronym(&self, bname: &str) -> bool
+    {
+        if self.acronym == bname
+        {
+            return true;
+        }
+        else if self.old_acronym == bname
+        {
+            return true;
+        }
+        else 
+        {
+            return false;    
+        }
     }
 }
 
@@ -291,15 +307,16 @@ pub fn get_scan_types(db_client: &mut Client, scan_types: &mut std::collections:
 
 pub fn get_beamlines(db_client: &mut Client, beamlines: &mut std::collections::HashMap<String, Beamline>) -> Result<(), postgres::Error> 
 {
-    for row in db_client.query("SELECT id, name, acronym, division, link FROM beamlines", &[])? 
+    for row in db_client.query("SELECT id, name, acronym, old_acronym, division, link FROM beamlines", &[])? 
     {
         beamlines.insert(row.get(2), Beamline 
         {
             id: row.get(0),
             name: row.get(1),
             acronym: row.get(2),
-            division: row.get(2),
-            link: row.get(2),
+            old_acronym: row.get(3),
+            division: row.get(4),
+            link: row.get(5),
         });
     }
     Ok(())

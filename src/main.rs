@@ -174,7 +174,18 @@ impl Config
         }
         else 
         {
-            println!("Error: could not find beamline {}", beamline_name);
+            for (key,val) in &self.db_beamlines
+            {
+                if val.contains_acronym(beamline_name) 
+                {
+                    self.beamline_id = val.get_id();
+                    break;
+                }
+            }
+            if self.beamline_id == -1
+            {
+                println!("Error: could not find beamline {}", beamline_name);
+            }
         }
     }
 }
