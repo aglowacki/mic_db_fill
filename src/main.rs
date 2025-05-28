@@ -434,6 +434,10 @@ fn main()
 
             config.init_run_info(&args.run.unwrap(), &args.beamline.unwrap());
 
+            if config.beamline_id == -1 || config.run_id == -1
+            {
+                panic!("Could not find beamline id or run id . Exiting");
+            }
             search_for_datasets(args.search_dir.as_ref().unwrap(), &raw_search_ext, &analyzed_search_ext, args.num_recursive, &mut config, &mut db_client).unwrap();
         }
         else

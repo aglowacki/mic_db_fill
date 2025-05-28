@@ -52,8 +52,8 @@
 ./mic_db_fill -s /data1/8bm/2018-1 -n 3 -r 2018-1 -b 8-BM-B >> 8bm.log
 ./mic_db_fill -s /data1/8bm/2014-3 -n 3 -r 2014-3 -b 8-BM-B >> 8bm.log
 
-./mic_db_fill -s /data1/bnp/2023-1 -n 3 -r 2023-1 -b 9-ID-B,C > bnp.log
-./mic_db_fill -s /data1/bnp/2022-3 -n 3 -r 2022-3 -b 9-ID-B,C >> bnp.log
+#./mic_db_fill -s /data1/bnp/2023-1 -n 3 -r 2023-1 -b 9-ID-B,C > bnp.log
+#./mic_db_fill -s /data1/bnp/2022-3 -n 3 -r 2022-3 -b 9-ID-B,C >> bnp.log
 ./mic_db_fill -s /data1/bnp/2022-2 -n 3 -r 2022-2 -b 9-ID-B,C >> bnp.log
 ./mic_db_fill -s /data1/bnp/2022-1 -n 3 -r 2022-1 -b 9-ID-B,C >> bnp.log
 ./mic_db_fill -s /data1/bnp/2021-3 -n 3 -r 2021-3 -b 9-ID-B,C >> bnp.log
