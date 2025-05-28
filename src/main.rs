@@ -107,7 +107,9 @@ impl Config
         {
             activity.beamtime.proposal.experimenters.iter().for_each(|experimenter: &Experimenter| 
             {
-                if experimenter.piFlag.is_some() && experimenter.lastName == experimenter_lastname
+                let f_last_name:String = experimenter.lastName.chars().filter(|&c| c != '\'').collect();
+                // remove ' from last names since path is saved without it
+                if experimenter.piFlag.is_some() && ( experimenter.lastName == experimenter_lastname || f_last_name == experimenter_lastname)
                 {
                     if experimenter.piFlag.is_some() && experimenter.piFlag.as_ref().unwrap() == "Y"
                     {
