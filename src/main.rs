@@ -4,6 +4,7 @@ use std::path::Path;
 use std::collections::HashMap;
 use std::io::{self, Read};
 use reqwest;
+//use reqwest::blocking::Client;
 use clap::Parser;
 use postgres::{Client, NoTls};
 
@@ -190,21 +191,21 @@ fn read_json_from_file(file_path: &str) -> Result<String, io::Error>
     Ok(contents)
 }
 
-async fn read_json_from_url(url_path: &str) -> Result<String, reqwest::Error> 
+fn read_json_from_url(url_path: &str) -> Result<String, reqwest::Error> 
 {
     let auth_str = env::var("SVC_AUTH_STR").unwrap_or_else(|_| "Bearer ".to_string());
-    let client = reqwest::Client::new();
-    let resp = client
-    .get(url_path)
+    let client = reqwest::blocking::Client::new();
+    let resp = client.get(url_path)
     .header("accept", "*/*")
     .header("Authorization", auth_str)
-    .send().await?;
+    .send()
+    .unwrap();
     //let resp = reqwest::blocking::get(url_path)?;
     if resp.status() != reqwest::StatusCode::OK
     {
         panic!("Error: {}", resp.status());
     }
-    let body = resp.text().await?;
+    let body = resp.text().unwrap();
     Ok(body,)
 }
 
@@ -349,9 +350,9 @@ fn search_for_datasets(direcotry: &str, search_raw_ext: &Vec<String>, search_ana
     Ok(())
 }
 
-#[tokio::main] 
-async fn main() 
-//fn main()
+//#[tokio::main] 
+//async fn main() 
+fn main()
 {
     let args = Args::parse();
 
@@ -395,7 +396,7 @@ async fn main()
                 url_path.push_str("/");
                 url_path.push_str(&beamline);
                 println!("reading from url {}", url_path);
-                beam_schedule = read_json_from_url(&url_path).await.unwrap();
+                beam_schedule = read_json_from_url(&url_path).unwrap();
             }
 
             //let activities: Vec<activity::Activity> = serde_json::from_str(&beam_schedule).unwrap();
