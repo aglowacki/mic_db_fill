@@ -349,9 +349,9 @@ fn search_for_datasets(direcotry: &str, search_raw_ext: &Vec<String>, search_ana
     Ok(())
 }
 
-//#[tokio::main] 
-//async fn main() 
-fn main()
+#[tokio::main] 
+async fn main() 
+//fn main()
 {
     let args = Args::parse();
 
@@ -395,7 +395,7 @@ fn main()
                 url_path.push_str("/");
                 url_path.push_str(&beamline);
                 println!("reading from url {}", url_path);
-                beam_schedule = futures::executor::block_on(read_json_from_url(&url_path)).unwrap();
+                beam_schedule = read_json_from_url(&url_path).await.unwrap();
             }
 
             //let activities: Vec<activity::Activity> = serde_json::from_str(&beam_schedule).unwrap();
